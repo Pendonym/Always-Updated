@@ -1,0 +1,15 @@
+{
+  "project": {
+    "modrinth_id": "rj6ioflZ",
+    "github_repo_owner": "Pendonym",
+    "github_repo_name": "Always-Updated",
+    "project_summary": "[26.3 Snapshot 2 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
+  },
+  "version": {
+    "number": "1.0-26.3",
+    "game_versions": ["26.3-snapshot-2"],
+    "loaders": ["fabric"],
+    "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
+    "changelog": "- Init"
+  }
+}
