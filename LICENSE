@@ -1,4 +1,3 @@
-@"
 zlib License
 
 Copyright (c) 2025 Pendonym
@@ -21,4 +20,3 @@ freely, subject to the following restrictions:
 
 3. This notice may not be removed or altered from any source
    distribution.
-"@ | Out-File -Encoding utf8 LICENSE
