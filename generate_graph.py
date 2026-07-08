@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from datetime import datetime, timezone
 
-MODRINTH_PROJECT_ID = "drZrp9Uv"
+MODRINTH_PROJECT_ID = "rj6ioflZ"
 
 def get_modrinth_versions():
     """
