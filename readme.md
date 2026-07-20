@@ -31,5 +31,3 @@ Always Updated uses a simplified versioning system as of January 22nd, 2026. Eac
 **Q:** Will you backport or fix X version?
 
 **A:** If an [issue request](https://github.com/Pendonym/Always-Updated/issues) is created I will.
-
-_I made this because I play on the server [8bit.pt](https://www.youtube.com/@8bitpt) and most optimization modpacks dont update to snapshots._
