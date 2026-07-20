@@ -1,11 +1,37 @@
+import os
 import sys
 import requests
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+
+load_dotenv()
 
 MODRINTH_PROJECT_ID = "rj6ioflZ"
+MODRINTH_TOKEN = os.environ.get("MODRINTH_TOKEN")
+DISALLOWED_VERSIONS = [
+    "2point0_red",
+    "2point0_purple",
+    "2point0_blue",
+    "15w14a",
+    "1.RV-Pre1",
+    "3D Shareware v1.34",
+    "20w14infinite",
+    "22w13oneBlockAtATime",
+    "23w13a_or_b",
+    "24w14potato",
+    "25w14craftmine",
+    "26w14a",
+]
+
+HEADERS = {"User-Agent": "modrinth.com/modpack/Always-Updated"}
+if MODRINTH_TOKEN:
+    HEADERS["Authorization"] = MODRINTH_TOKEN
+else:
+    print("Warning: MODRINTH_TOKEN not set in .env -- only public data will be visible.")
+
 
 def get_modrinth_versions():
     """
@@ -19,6 +45,7 @@ def get_modrinth_versions():
         resp = requests.get(
             f"https://api.modrinth.com/v2/project/{MODRINTH_PROJECT_ID}/version",
             params={"limit": 100, "offset": offset},
+            headers=HEADERS,
             timeout=15,
         )
         resp.raise_for_status()
@@ -65,6 +92,10 @@ def main():
 
     data_points = []
     for mc_version in sorted(earliest_times):
+        if mc_version in DISALLOWED_VERSIONS:
+            print(f"  Skipping '{mc_version}': in disallow list.")
+            continue
+
         if mc_version not in mc_versions:
             print(f"  Skipping '{mc_version}': not found in Mojang manifest.")
             continue
