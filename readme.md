@@ -18,9 +18,7 @@ Always Updated uses a simplified versioning system as of January 22nd, 2026. Eac
 
 ### Version History
 
-- **Current Format** (January 22nd, 2026 - Present): Simple incremental numbering (1, 2, 3, etc.)
-- **Previous Format** (December 1st, 2025 - January 21st, 2026): Format: `<major>.<minor>-<snapshot number>`
-- **Legacy Format** (Prior to December 1st, 2025): [Semantic Versioning 2.0.0](https://semver.org/) specification
+- **Current Format** (July 3rd, 2026 - Today): Format: `<incremetal number>-<latest full release>`
 
 ## FAQ
 
