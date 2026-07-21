@@ -24,6 +24,9 @@ DISALLOWED_VERSIONS = [
     "24w14potato",
     "25w14craftmine",
     "26w14a",
+    "26.3-snapshot-2", # released way before the modpack was up
+    "26.3-snapshot-4", # was debating if i should upload it or not since the modpack was under review
+
 ]
 
 HEADERS = {"User-Agent": "modrinth.com/modpack/Always-Updated"}
