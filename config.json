@@ -10,6 +10,6 @@
     "game_versions": ["26.3-snapshot-6"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated Fabric API, Fast Noise, and C2ME"
+    "changelog": "- Added Mod Menu\n- Updated Fabric API, Fast Noise, and C2ME"
   }
 }
