@@ -6,7 +6,7 @@
     "project_summary": "[26.3 Snapshot 6 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "4-26.3",
+    "number": "5-26.3",
     "game_versions": ["26.3-snapshot-6"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
