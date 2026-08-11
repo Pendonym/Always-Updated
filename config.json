@@ -10,6 +10,6 @@
     "game_versions": ["26.3-snapshot-7"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated Fabric API and C2ME"
+    "changelog": "- Added [Particle Core](https://modrinth.com/mod/particle-core), [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin), and [Fzzy Config](https://modrinth.com/mod/fzzy-config)\n- Updated [Fabric API](https://modrinth.com/mod/fabric-api) and [Fast Noise](https://modrinth.com/mod/zfastnoise)"
   }
 }
