@@ -63,7 +63,7 @@ Changelog on Minecraft Wiki: [View Here](https://minecraft.wiki/w/Java_Edition_{
                 version_name=VERSION_NAME, 
                 version_number=VERSION_NUMBER,
                 changelog=CHANGELOG_FOR_MODRINTH,
-                environment=config['version'].get('environment', 'client_and_server'),
+                environment=config['version'].get('environment', 'client_only_server_optional'),
                 game_versions=GAME_VERSIONS, 
                 loaders=LOADERS,
                 file_path=FILE_PATH, 
