@@ -79,10 +79,8 @@ def demote_latest_release(project_id, modrinth_token):
         return False
     return True
 
-def upload_modpack(project_id, version_name, version_number, changelog, game_versions, loaders, file_path, modrinth_token):
-    """
-    Uploads a new modpack version to a Modrinth project.
-    """
+def upload_modpack(project_id, version_name, version_number, changelog, game_versions, loaders,
+                    file_path, modrinth_token, environment="client_and_server"):
     file_path = os.path.expanduser(file_path)
     if not os.path.exists(file_path):
         print(f"Error: The file '{file_path}' does not exist.")
@@ -95,18 +93,7 @@ def upload_modpack(project_id, version_name, version_number, changelog, game_ver
         "project_id": project_id, "name": version_name, "version_number": version_number,
         "changelog": changelog, "game_versions": game_versions, "loaders": loaders,
         "version_type": "release", "featured": True, "status": "listed",
-        "dependencies": [], "file_parts": ["file"]
+        "dependencies": [], "file_parts": ["file"],
+        "environment": environment,
     }
-    files = {"file": (os.path.basename(file_path), open(file_path, "rb"), "application/x-modrinth-modpack+zip")}
-    form_data = {'data': json.dumps(data)}
-    try:
-        response = requests.post(api_url, headers=headers, data=form_data, files=files)
-        response.raise_for_status()
-        print("Modpack uploaded to Modrinth successfully!")
-        return True
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP Error during Modrinth upload: {err}\nResponse body: {err.response.text}")
-        return False
-    finally:
-        if 'file' in files:
-            files['file'][1].close()
+    ...
