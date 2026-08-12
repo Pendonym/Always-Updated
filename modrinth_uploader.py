@@ -10,7 +10,7 @@ def update_project_summary(project_id, desired_summary, modrinth_token):
     print("Checking Modrinth project summary...")
     
     api_url = f"https://api.modrinth.com/v2/project/{project_id}"
-    headers = {"Authorization": modrinth_token, "User-Agent": "YoureIronic/Always-Updated (youreironic@duck.com)"}
+    headers = {"Authorization": modrinth_token, "User-Agent": "Pendonym/Always-Updated"}
 
     try:
         # --- STEP 1: GET the current project data ---
@@ -50,7 +50,7 @@ def demote_latest_release(project_id, modrinth_token):
     """
     print("\nChecking for a previous Modrinth release to demote...")
     list_versions_url = f"https://api.modrinth.com/v2/project/{project_id}/version"
-    headers = {"Authorization": modrinth_token, "User-Agent": "YoureIronic (youreironic@duck.com)"}
+    headers = {"Authorization": modrinth_token, "User-Agent": "Pendonym/Always Updated"}
     try:
         response = requests.get(list_versions_url, headers=headers)
         response.raise_for_status()
@@ -90,7 +90,7 @@ def upload_modpack(project_id, version_name, version_number, changelog, game_ver
     
     print(f"\nUploading new release to Modrinth: {version_name}...")
     api_url = "https://api.modrinth.com/v2/version"
-    headers = {"Authorization": modrinth_token, "User-Agent": "YoureIronic (youreironic@duck.com)"}
+    headers = {"Authorization": modrinth_token, "User-Agent": "Pendonym/Always Updated"}
     data = {
         "project_id": project_id, "name": version_name, "version_number": version_number,
         "changelog": changelog, "game_versions": game_versions, "loaders": loaders,
