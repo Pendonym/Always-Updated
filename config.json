@@ -10,6 +10,6 @@
     "game_versions": ["26.3-snapshot-8"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated [Fabric API](https://modrinth.com/mod/fabric-api) and [C2ME](https://modrinth.com/mod/c2me-fabric)"
+    "changelog": "- Updated [Fabric API](https://modrinth.com/mod/fabric-api) and [C2ME](https://modrinth.com/mod/c2me-fabric)\n- Disabled [Fast Noise](https://modrinth.com/mod/zfastnoise)"
   }
 }
