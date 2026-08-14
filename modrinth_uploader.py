@@ -96,4 +96,16 @@ def upload_modpack(project_id, version_name, version_number, changelog, game_ver
         "dependencies": [], "file_parts": ["file"],
         "environment": environment,
     }
-    ...
+    files = {"file": (os.path.basename(file_path), open(file_path, "rb"), "application/x-modrinth-modpack+zip")}
+    form_data = {'data': json.dumps(data)}
+    try:
+        response = requests.post(api_url, headers=headers, data=form_data, files=files)
+        response.raise_for_status()
+        print("Modpack uploaded to Modrinth successfully!")
+        return True
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP Error during Modrinth upload: {err}\nResponse body: {err.response.text}")
+        return False
+    finally:
+        if 'file' in files:
+            files['file'][1].close()
