@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# =========================================================
+# PROJECTS
+# =========================================================
+
 PROJECTS = {
     "Always Updated": "rj6ioflZ",
     "Wmfgn1eN": "Wmfgn1eN",
@@ -45,12 +49,17 @@ else:
     )
 
 
+# =========================================================
+# MODRINTH
+# =========================================================
+
 def get_modrinth_project_name(project_id):
     resp = requests.get(
         f"https://api.modrinth.com/v2/project/{project_id}",
         headers=HEADERS,
         timeout=15,
     )
+
     resp.raise_for_status()
 
     return resp.json().get("title", project_id)
@@ -58,15 +67,28 @@ def get_modrinth_project_name(project_id):
 
 def get_modrinth_versions(project_id):
     """
+    Gets every Modrinth project version.
+
+    IMPORTANT:
+    Multiple Modrinth project versions can target the same
+    Minecraft version.
+
+    Example:
+
+        AU v1 -> 26.3-snapshot-8
+        AU v2 -> 26.3-snapshot-8
+        AU v3 -> 26.3-snapshot-8
+
+    Only the EARLIEST publication time is used for
+    26.3-snapshot-8.
+
     Returns:
+
         {
-            "1.21.8": datetime(...),
-            "1.21.7": datetime(...),
+            "26.3-snapshot-8": datetime(...),
+            "26.3-snapshot-7": datetime(...),
             ...
         }
-
-    If multiple Modrinth versions target the same Minecraft version,
-    the earliest publication time is used.
     """
 
     versions = []
@@ -105,6 +127,10 @@ def get_modrinth_versions(project_id):
         )
 
         for game_version in version.get("game_versions", []):
+
+            if game_version in DISALLOWED_VERSIONS:
+                continue
+
             if (
                 game_version not in earliest
                 or published < earliest[game_version]
@@ -114,11 +140,16 @@ def get_modrinth_versions(project_id):
     return earliest
 
 
+# =========================================================
+# MOJANG
+# =========================================================
+
 def get_mojang_manifest():
     resp = requests.get(
         "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
         timeout=15,
     )
+
     resp.raise_for_status()
 
     return {
@@ -129,7 +160,9 @@ def get_mojang_manifest():
 
 def get_mc_release_time(version_info):
     """
-    Returns the official Minecraft release timestamp.
+    Gets the official Minecraft releaseTime.
+
+    Falls back to time if releaseTime isn't available.
     """
 
     resp = requests.get(
@@ -167,18 +200,24 @@ def get_mc_release_time(version_info):
     return chosen
 
 
+# =========================================================
+# MAIN
+# =========================================================
+
 def main():
+
     print("==========================================")
     print("       MODRINTH UPDATE SPEED COMPARISON")
     print("==========================================\n")
 
-    # ---------------------------------------------------------
+    # =====================================================
     # GET PROJECT NAMES
-    # ---------------------------------------------------------
+    # =====================================================
 
     project_names = {}
 
     for label, project_id in PROJECTS.items():
+
         try:
             name = get_modrinth_project_name(project_id)
 
@@ -189,6 +228,7 @@ def main():
             )
 
         except Exception as e:
+
             print(
                 f"Failed to get project name for "
                 f"{label}: {e}"
@@ -196,19 +236,21 @@ def main():
 
             project_names[label] = label
 
-    # ---------------------------------------------------------
+    # =====================================================
     # GET MODRINTH VERSION DATA
-    # ---------------------------------------------------------
+    # =====================================================
 
     project_times = {}
 
     for label, project_id in PROJECTS.items():
+
         print(
             f"\nFetching versions for "
             f"{project_names[label]}..."
         )
 
         try:
+
             times = get_modrinth_versions(
                 project_id
             )
@@ -216,50 +258,48 @@ def main():
             project_times[label] = times
 
             print(
-                f"  Found {len(times)} Minecraft versions."
+                f"  Found {len(times)} unique Minecraft versions."
             )
 
         except Exception as e:
+
             print(
                 f"  ERROR: {e}"
             )
 
             project_times[label] = {}
 
-    # ---------------------------------------------------------
-    # GET MOJANG DATA
-    # ---------------------------------------------------------
+    # =====================================================
+    # GET MOJANG VERSION MANIFEST
+    # =====================================================
 
-    print("\nFetching Mojang version manifest...")
+    print(
+        "\nFetching Mojang version manifest..."
+    )
 
     mc_versions = get_mojang_manifest()
 
     # Mojang manifest is newest -> oldest.
-    manifest_order = list(mc_versions.keys())
-
-    # ---------------------------------------------------------
-    # GET ALL VERSIONS FROM ALL PROJECTS
-    # ---------------------------------------------------------
-
-    all_versions = set()
-
-    for label in PROJECTS:
-        all_versions.update(
-            project_times[label].keys()
-        )
-
-    print(
-        f"\nFound {len(all_versions)} total versions "
-        "across all projects."
+    manifest_order = list(
+        mc_versions.keys()
     )
 
-    # ---------------------------------------------------------
-    # FILTER VALID VERSIONS
-    # ---------------------------------------------------------
+    # =====================================================
+    # ALWAYS UPDATED IS THE REFERENCE
+    # =====================================================
+    #
+    # This is the important part.
+    #
+    # The averages and individual comparison are based on
+    # the Minecraft versions that Always Updated itself has
+    # uploaded.
+    #
+    # We do NOT use the union of all three projects anymore.
+    # =====================================================
 
-    valid_versions = []
+    reference_versions = []
 
-    for version in all_versions:
+    for version in project_times["Always Updated"]:
 
         if version in DISALLOWED_VERSIONS:
             continue
@@ -267,62 +307,72 @@ def main():
         if version not in mc_versions:
             continue
 
-        valid_versions.append(version)
+        reference_versions.append(version)
 
-    # ---------------------------------------------------------
-    # SORT NEWEST -> OLDEST
-    # ---------------------------------------------------------
-
-    valid_versions.sort(
+    # Newest -> oldest according to Mojang.
+    reference_versions.sort(
         key=lambda version: manifest_order.index(version)
     )
 
-    # ---------------------------------------------------------
-    # ONLY USE THE LATEST 5
-    # ---------------------------------------------------------
-
-    selected_versions = valid_versions[:5]
-
     print(
-        f"\nUsing the latest "
-        f"{len(selected_versions)} valid versions:"
+        f"\nAlways Updated has "
+        f"{len(reference_versions)} valid Minecraft versions."
     )
 
-    for version in selected_versions:
-        print(f"  {version}")
+    # =====================================================
+    # GET RELEASE TIMES FOR ALL REFERENCE VERSIONS
+    # =====================================================
 
-    # ---------------------------------------------------------
-    # BUILD DATA
-    # ---------------------------------------------------------
+    release_times = {}
 
-    data_points = []
-
-    for mc_version in selected_versions:
+    for mc_version in reference_versions:
 
         try:
-            mc_release_time = get_mc_release_time(
-                mc_versions[mc_version]
+
+            release_times[mc_version] = (
+                get_mc_release_time(
+                    mc_versions[mc_version]
+                )
             )
 
         except Exception as e:
+
             print(
                 f"Skipping {mc_version}: "
-                f"failed to get release time ({e})"
+                f"failed to get Minecraft release time "
+                f"({e})"
             )
+
+    # =====================================================
+    # BUILD ALL-TIME DATA
+    # =====================================================
+    #
+    # This contains EVERY Always Updated version.
+    #
+    # It is used for the averages.
+    # =====================================================
+
+    all_data_points = []
+
+    for mc_version in reference_versions:
+
+        if mc_version not in release_times:
             continue
+
+        mc_release_time = release_times[
+            mc_version
+        ]
 
         point = {
             "label": mc_version
         }
 
-        # -----------------------------------------------------
-        # CALCULATE EACH PROJECT'S UPDATE TIME
-        # -----------------------------------------------------
-
         for label in PROJECTS:
 
             if mc_version not in project_times[label]:
+
                 point[label] = None
+
                 continue
 
             delta = (
@@ -330,42 +380,23 @@ def main():
                 - mc_release_time
             ).total_seconds() / 3600
 
-            # Ignore impossible negative values.
+            # Ignore negative values.
             if delta < 0:
+
                 point[label] = None
+
             else:
-                point[label] = round(delta, 1)
 
-        data_points.append(point)
-
-        # -----------------------------------------------------
-        # PRINT INDIVIDUAL RESULT
-        # -----------------------------------------------------
-
-        output = f"  {mc_version}:"
-
-        for label in PROJECTS:
-
-            value = point[label]
-
-            if value is None:
-                output += f" {label}=N/A"
-            else:
-                output += (
-                    f" {label}={value:.1f}h"
+                point[label] = round(
+                    delta,
+                    1
                 )
 
-        print(output)
+        all_data_points.append(point)
 
-    if not data_points:
-        print(
-            "\nNo valid data points found."
-        )
-        sys.exit(0)
-
-    # ---------------------------------------------------------
-    # CALCULATE AVERAGES
-    # ---------------------------------------------------------
+    # =====================================================
+    # ALL-TIME AVERAGES
+    # =====================================================
 
     averages = {}
 
@@ -373,34 +404,41 @@ def main():
 
         values = [
             point[label]
-            for point in data_points
+            for point in all_data_points
             if point[label] is not None
         ]
 
         if values:
-            averages[label] = sum(values) / len(values)
+
+            averages[label] = (
+                sum(values) / len(values)
+            )
+
         else:
+
             averages[label] = None
 
-    # ---------------------------------------------------------
-    # PRINT AVERAGES
-    # ---------------------------------------------------------
+    # =====================================================
+    # PRINT ALL-TIME AVERAGES
+    # =====================================================
 
     print("\n==========================================")
-    print("                 AVERAGES")
+    print("             ALL-TIME AVERAGES")
     print("==========================================")
 
     for label in PROJECTS:
 
         if averages[label] is None:
+
             print(
                 f"{project_names[label]}: N/A"
             )
+
         else:
 
             count = sum(
                 1
-                for point in data_points
+                for point in all_data_points
                 if point[label] is not None
             )
 
@@ -410,9 +448,9 @@ def main():
                 f"({count} versions)"
             )
 
-    # ---------------------------------------------------------
-    # FIND FASTEST
-    # ---------------------------------------------------------
+    # =====================================================
+    # FASTEST ALL-TIME
+    # =====================================================
 
     valid_averages = {
         label: average
@@ -428,34 +466,83 @@ def main():
         )
 
         print(
-            f"\nFASTEST OVERALL: "
+            f"\nFASTEST ALL-TIME: "
             f"{project_names[fastest]} "
             f"({averages[fastest]:.1f}h average)"
         )
 
-    print("\n==========================================")
+    # =====================================================
+    # LATEST 5 INDIVIDUAL VERSIONS
+    # =====================================================
+    #
+    # ONLY the latest 5 are shown in the lower graph.
+    #
+    # These are based on Always Updated's versions, not
+    # the union of all projects.
+    # =====================================================
 
-    # =========================================================
-    # GRAPH
-    # =========================================================
+    latest_versions = reference_versions[:5]
+
+    print("\n==========================================")
+    print("          LATEST 5 VERSIONS")
+    print("==========================================")
+
+    latest_data_points = []
+
+    for mc_version in latest_versions:
+
+        # Find the corresponding all-time data point.
+        matching = next(
+            (
+                point
+                for point in all_data_points
+                if point["label"] == mc_version
+            ),
+            None,
+        )
+
+        if matching is None:
+            continue
+
+        latest_data_points.append(
+            matching
+        )
+
+        output = f"  {mc_version}:"
+
+        for label in PROJECTS:
+
+            value = matching[label]
+
+            if value is None:
+
+                output += (
+                    f" {label}=N/A"
+                )
+
+            else:
+
+                output += (
+                    f" {label}={value:.1f}h"
+                )
+
+        print(output)
+
+    # =====================================================
+    # GRAPH COLORS
+    # =====================================================
 
     TEXT_COLOR = "#2ECC71"
 
     COLORS = {
         "Always Updated": "#FFD700",
-        "Wmfgn1eN": "#B06CFF",
-        "Gvp9bbxY": "#4DA6FF",
+        "Wmfgn1eN": "#4DA6FF",
+        "Gvp9bbxY": "#B06CFF",
     }
 
-    # ---------------------------------------------------------
-    # FIGURE
-    #
-    # Top:
-    #   Average Update Time
-    #
-    # Bottom:
-    #   Individual versions
-    # ---------------------------------------------------------
+    # =====================================================
+    # CREATE FIGURE
+    # =====================================================
 
     fig = plt.figure(
         figsize=(14, 9)
@@ -466,19 +553,28 @@ def main():
     grid = fig.add_gridspec(
         2,
         1,
-        height_ratios=[2.2, 1.5],
-        hspace=0.35,
+        height_ratios=[
+            2.2,
+            1.7,
+        ],
+        hspace=0.38,
     )
 
-    ax_avg = fig.add_subplot(grid[0])
-    ax_detail = fig.add_subplot(grid[1])
+    ax_avg = fig.add_subplot(
+        grid[0]
+    )
+
+    ax_detail = fig.add_subplot(
+        grid[1]
+    )
 
     ax_avg.patch.set_alpha(0.0)
     ax_detail.patch.set_alpha(0.0)
 
-    # =========================================================
-    # TOP GRAPH — AVERAGE UPDATE TIME
-    # =========================================================
+    # =====================================================
+    # TOP GRAPH
+    # ALL-TIME AVERAGE UPDATE TIME
+    # =====================================================
 
     average_labels = [
         project_names[label]
@@ -497,7 +593,9 @@ def main():
         for label in PROJECTS
     ]
 
-    x_avg = list(range(len(PROJECTS)))
+    x_avg = list(
+        range(len(PROJECTS))
+    )
 
     bars = ax_avg.bar(
         x_avg,
@@ -508,13 +606,13 @@ def main():
         linewidth=0.8,
     )
 
-    # ---------------------------------------------------------
-    # AVERAGE VALUE LABELS
-    # ---------------------------------------------------------
-
     max_average = max(
         average_values
     )
+
+    # =====================================================
+    # AVERAGE VALUE LABELS
+    # =====================================================
 
     for bar, value in zip(
         bars,
@@ -537,13 +635,13 @@ def main():
             color=TEXT_COLOR,
         )
 
-    # ---------------------------------------------------------
-    # TOP TITLE
-    # ---------------------------------------------------------
+    # =====================================================
+    # TOP GRAPH TITLE
+    # =====================================================
 
     ax_avg.set_title(
-        "Average Time to Update",
-        fontsize=19,
+        "Average Update Time - All Minecraft Versions",
+        fontsize=18,
         fontweight="bold",
         color=TEXT_COLOR,
         pad=15,
@@ -556,7 +654,9 @@ def main():
         color=TEXT_COLOR,
     )
 
-    ax_avg.set_xticks(x_avg)
+    ax_avg.set_xticks(
+        x_avg
+    )
 
     ax_avg.set_xticklabels(
         average_labels,
@@ -569,20 +669,24 @@ def main():
         colors=TEXT_COLOR,
     )
 
-    # Give the average chart a reasonable amount
-    # of headroom without letting an individual
-    # outlier determine the scale.
+    # Only the averages determine this scale.
+    # Individual 104.5h outliers do NOT affect it.
     ax_avg.set_ylim(
         0,
         max_average * 1.25
     )
 
-    # ---------------------------------------------------------
-    # AVERAGE GRAPH SPINES
-    # ---------------------------------------------------------
+    # =====================================================
+    # TOP SPINES
+    # =====================================================
 
-    ax_avg.spines["top"].set_visible(False)
-    ax_avg.spines["right"].set_visible(False)
+    ax_avg.spines["top"].set_visible(
+        False
+    )
+
+    ax_avg.spines["right"].set_visible(
+        False
+    )
 
     ax_avg.spines["left"].set_color(
         TEXT_COLOR
@@ -592,24 +696,50 @@ def main():
         TEXT_COLOR
     )
 
-    # =========================================================
-    # BOTTOM GRAPH — INDIVIDUAL RESULTS
-    # =========================================================
+    # =====================================================
+    # BOTTOM GRAPH
+    # LATEST 5 INDIVIDUAL UPDATE TIMES
+    # =====================================================
 
     versions = [
         point["label"]
-        for point in data_points
+        for point in latest_data_points
     ]
 
     x_detail = list(
         range(len(versions))
     )
 
-    project_count = len(PROJECTS)
+    project_count = len(
+        PROJECTS
+    )
 
-    width = 0.75 / project_count
+    width = (
+        0.75 / project_count
+    )
 
-    for index, project_label in enumerate(PROJECTS):
+    # Find the largest value ONLY among the
+    # latest 5 individual versions.
+    latest_values = [
+        point[label]
+        for point in latest_data_points
+        for label in PROJECTS
+        if point[label] is not None
+    ]
+
+    max_latest = (
+        max(latest_values)
+        if latest_values
+        else 1
+    )
+
+    # =====================================================
+    # DRAW LATEST 5 BARS
+    # =====================================================
+
+    for index, project_label in enumerate(
+        PROJECTS
+    ):
 
         offset = (
             index
@@ -626,28 +756,40 @@ def main():
 
         for position, point in zip(
             positions,
-            data_points
+            latest_data_points
         ):
 
-            value = point[project_label]
+            value = point[
+                project_label
+            ]
 
             if value is not None:
-                existing_positions.append(position)
-                existing_values.append(value)
+
+                existing_positions.append(
+                    position
+                )
+
+                existing_values.append(
+                    value
+                )
 
         bars = ax_detail.bar(
             existing_positions,
             existing_values,
             width=width,
-            color=COLORS[project_label],
+            color=COLORS[
+                project_label
+            ],
             edgecolor="black",
             linewidth=0.5,
-            label=project_names[project_label],
+            label=project_names[
+                project_label
+            ],
         )
 
-        # -----------------------------------------------------
-        # INDIVIDUAL VALUE LABELS
-        # -----------------------------------------------------
+        # =================================================
+        # VALUE LABELS
+        # =================================================
 
         for bar, value in zip(
             bars,
@@ -658,43 +800,45 @@ def main():
                 bar.get_x()
                 + bar.get_width() / 2,
                 bar.get_height()
-                + 0.8,
-                f"{value:.1f}",
+                + max_latest * 0.018,
+                f"{value:.1f}h",
                 ha="center",
                 va="bottom",
-                fontsize=7,
+                fontsize=8,
                 fontweight="bold",
                 color=TEXT_COLOR,
             )
 
-        # -----------------------------------------------------
-        # MISSING DATA MARKER
-        # -----------------------------------------------------
+        # =================================================
+        # MISSING DATA
+        # =================================================
 
         for position, point in zip(
             positions,
-            data_points
+            latest_data_points
         ):
 
-            if point[project_label] is None:
+            if point[
+                project_label
+            ] is None:
 
                 ax_detail.text(
                     position,
-                    0.5,
-                    "N/A",
+                    max_latest * 0.012,
+                    "—",
                     ha="center",
                     va="bottom",
-                    fontsize=11,
+                    fontsize=12,
                     fontweight="bold",
                     color="#777777",
                 )
 
-    # ---------------------------------------------------------
-    # DETAIL TITLE
-    # ---------------------------------------------------------
+    # =====================================================
+    # BOTTOM GRAPH TITLE
+    # =====================================================
 
     ax_detail.set_title(
-        "Individual Update Times",
+        "Latest 5 Individual Update Times",
         fontsize=13,
         fontweight="bold",
         color=TEXT_COLOR,
@@ -725,33 +869,14 @@ def main():
         colors=TEXT_COLOR,
     )
 
-    # ---------------------------------------------------------
-    # DETAIL Y LIMIT
-    #
-    # The individual graph still needs to contain the
-    # 104.5h outlier, but it is now isolated to this
-    # smaller lower section.
-    # ---------------------------------------------------------
-
-    individual_values = [
-        point[label]
-        for point in data_points
-        for label in PROJECTS
-        if point[label] is not None
-    ]
-
-    max_individual = max(
-        individual_values
-    )
-
     ax_detail.set_ylim(
         0,
-        max_individual * 1.18
+        max_latest * 1.25
     )
 
-    # ---------------------------------------------------------
-    # DETAIL LEGEND
-    # ---------------------------------------------------------
+    # =====================================================
+    # BOTTOM LEGEND
+    # =====================================================
 
     ax_detail.legend(
         loc="upper left",
@@ -760,12 +885,17 @@ def main():
         fontsize=9,
     )
 
-    # ---------------------------------------------------------
-    # DETAIL SPINES
-    # ---------------------------------------------------------
+    # =====================================================
+    # BOTTOM SPINES
+    # =====================================================
 
-    ax_detail.spines["top"].set_visible(False)
-    ax_detail.spines["right"].set_visible(False)
+    ax_detail.spines["top"].set_visible(
+        False
+    )
+
+    ax_detail.spines["right"].set_visible(
+        False
+    )
 
     ax_detail.spines["left"].set_color(
         TEXT_COLOR
@@ -775,35 +905,39 @@ def main():
         TEXT_COLOR
     )
 
-    # ---------------------------------------------------------
-    # MAIN FIGURE TITLE
-    # ---------------------------------------------------------
+    # =====================================================
+    # MAIN TITLE
+    # =====================================================
 
     fig.suptitle(
         "Modpack Update Speed Comparison",
-        fontsize=22,
+        fontsize=21,
         fontweight="bold",
         color=TEXT_COLOR,
         y=0.98,
     )
 
-    # ---------------------------------------------------------
+    # =====================================================
     # FOOTER
-    # ---------------------------------------------------------
+    # =====================================================
 
     fig.text(
         0.5,
         0.01,
-        "Average is calculated from the latest 5 valid Minecraft versions. "
-        "N/A indicates that the modpack did not have that version.",
+        (
+            "Average uses every valid Minecraft version "
+            "uploaded by Always Updated. "
+            "Individual results show only the latest 5. "
+            "— = no update for that version."
+        ),
         ha="center",
         fontsize=8,
         color=TEXT_COLOR,
     )
 
-    # ---------------------------------------------------------
+    # =====================================================
     # SAVE
-    # ---------------------------------------------------------
+    # =====================================================
 
     plt.savefig(
         "update_graph.png",
@@ -814,14 +948,27 @@ def main():
 
     plt.close(fig)
 
+    # =====================================================
+    # FINAL OUTPUT
+    # =====================================================
+
+    print("\n==========================================")
+
     print(
-        "\nGraph saved: update_graph.png"
+        "Graph saved: update_graph.png"
     )
 
     print(
-        f"Displayed {len(data_points)} "
-        "versions."
+        f"All-time average calculated from "
+        f"{len(all_data_points)} Always Updated versions."
     )
+
+    print(
+        f"Individual graph displays "
+        f"{len(latest_data_points)} latest versions."
+    )
+
+    print("==========================================")
 
 
 if __name__ == "__main__":
