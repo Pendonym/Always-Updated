@@ -825,7 +825,7 @@ def main():
                 ax_detail.text(
                     position,
                     max_latest * 0.012,
-                    "—",
+                    "N/A",
                     ha="center",
                     va="bottom",
                     fontsize=12,
@@ -928,7 +928,7 @@ def main():
             "Average uses every valid Minecraft version "
             "uploaded by Always Updated. "
             "Individual results show only the latest 5. "
-            "— = no update for that version."
+            "N/A = no update for that version."
         ),
         ha="center",
         fontsize=8,
