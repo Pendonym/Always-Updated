@@ -234,11 +234,11 @@ def main():
 
     mc_versions = get_mojang_manifest()
 
-    # Mojang manifest is ordered newest -> oldest.
+    # Mojang manifest is newest -> oldest.
     manifest_order = list(mc_versions.keys())
 
     # ---------------------------------------------------------
-    # GET UNION OF ALL VERSIONS
+    # GET ALL VERSIONS FROM ALL PROJECTS
     # ---------------------------------------------------------
 
     all_versions = set()
@@ -254,7 +254,7 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # FILTER TO VALID VERSIONS
+    # FILTER VALID VERSIONS
     # ---------------------------------------------------------
 
     valid_versions = []
@@ -270,8 +270,7 @@ def main():
         valid_versions.append(version)
 
     # ---------------------------------------------------------
-    # SORT BY MOJANG MANIFEST ORDER
-    # NEWEST -> OLDEST
+    # SORT NEWEST -> OLDEST
     # ---------------------------------------------------------
 
     valid_versions.sort(
@@ -279,13 +278,13 @@ def main():
     )
 
     # ---------------------------------------------------------
-    # ONLY SHOW THE LATEST 5
+    # ONLY USE THE LATEST 5
     # ---------------------------------------------------------
 
     selected_versions = valid_versions[:5]
 
     print(
-        f"\nDisplaying the latest "
+        f"\nUsing the latest "
         f"{len(selected_versions)} valid versions:"
     )
 
@@ -312,17 +311,18 @@ def main():
             )
             continue
 
-        deltas = {}
+        point = {
+            "label": mc_version
+        }
 
         # -----------------------------------------------------
-        # CALCULATE UPDATE TIME FOR EACH PROJECT
+        # CALCULATE EACH PROJECT'S UPDATE TIME
         # -----------------------------------------------------
 
         for label in PROJECTS:
 
-            # Project does not have this Minecraft version.
             if mc_version not in project_times[label]:
-                deltas[label] = None
+                point[label] = None
                 continue
 
             delta = (
@@ -332,39 +332,21 @@ def main():
 
             # Ignore impossible negative values.
             if delta < 0:
-                deltas[label] = None
-            else:
-                deltas[label] = delta
-
-        # -----------------------------------------------------
-        # SAVE DATA POINT
-        # -----------------------------------------------------
-
-        point = {
-            "label": mc_version
-        }
-
-        for label in PROJECTS:
-
-            if deltas[label] is None:
                 point[label] = None
             else:
-                point[label] = round(
-                    deltas[label],
-                    1
-                )
+                point[label] = round(delta, 1)
 
         data_points.append(point)
 
         # -----------------------------------------------------
-        # CONSOLE OUTPUT
+        # PRINT INDIVIDUAL RESULT
         # -----------------------------------------------------
 
         output = f"  {mc_version}:"
 
         for label in PROJECTS:
 
-            value = deltas[label]
+            value = point[label]
 
             if value is None:
                 output += f" {label}=N/A"
@@ -396,9 +378,7 @@ def main():
         ]
 
         if values:
-            averages[label] = (
-                sum(values) / len(values)
-            )
+            averages[label] = sum(values) / len(values)
         else:
             averages[label] = None
 
@@ -413,11 +393,9 @@ def main():
     for label in PROJECTS:
 
         if averages[label] is None:
-
             print(
                 f"{project_names[label]}: N/A"
             )
-
         else:
 
             count = sum(
@@ -457,64 +435,179 @@ def main():
 
     print("\n==========================================")
 
+    # =========================================================
+    # GRAPH
+    # =========================================================
+
+    TEXT_COLOR = "#2ECC71"
+
+    COLORS = {
+        "Always Updated": "#FFD700",
+        "Wmfgn1eN": "#4DA6FF",
+        "Gvp9bbxY": "#B06CFF",
+    }
+
     # ---------------------------------------------------------
-    # GRAPH DATA
+    # FIGURE
+    #
+    # Top:
+    #   Average Update Time
+    #
+    # Bottom:
+    #   Individual versions
     # ---------------------------------------------------------
 
-    labels = [
+    fig = plt.figure(
+        figsize=(14, 9)
+    )
+
+    fig.patch.set_alpha(0.0)
+
+    grid = fig.add_gridspec(
+        2,
+        1,
+        height_ratios=[2.2, 1.5],
+        hspace=0.35,
+    )
+
+    ax_avg = fig.add_subplot(grid[0])
+    ax_detail = fig.add_subplot(grid[1])
+
+    ax_avg.patch.set_alpha(0.0)
+    ax_detail.patch.set_alpha(0.0)
+
+    # =========================================================
+    # TOP GRAPH — AVERAGE UPDATE TIME
+    # =========================================================
+
+    average_labels = [
+        project_names[label]
+        for label in PROJECTS
+    ]
+
+    average_values = [
+        averages[label]
+        if averages[label] is not None
+        else 0
+        for label in PROJECTS
+    ]
+
+    average_colors = [
+        COLORS[label]
+        for label in PROJECTS
+    ]
+
+    x_avg = list(range(len(PROJECTS)))
+
+    bars = ax_avg.bar(
+        x_avg,
+        average_values,
+        width=0.55,
+        color=average_colors,
+        edgecolor="black",
+        linewidth=0.8,
+    )
+
+    # ---------------------------------------------------------
+    # AVERAGE VALUE LABELS
+    # ---------------------------------------------------------
+
+    max_average = max(
+        average_values
+    )
+
+    for bar, value in zip(
+        bars,
+        average_values
+    ):
+
+        if value <= 0:
+            continue
+
+        ax_avg.text(
+            bar.get_x()
+            + bar.get_width() / 2,
+            bar.get_height()
+            + max_average * 0.025,
+            f"{value:.1f}h",
+            ha="center",
+            va="bottom",
+            fontsize=13,
+            fontweight="bold",
+            color=TEXT_COLOR,
+        )
+
+    # ---------------------------------------------------------
+    # TOP TITLE
+    # ---------------------------------------------------------
+
+    ax_avg.set_title(
+        "Average Time to Update",
+        fontsize=19,
+        fontweight="bold",
+        color=TEXT_COLOR,
+        pad=15,
+    )
+
+    ax_avg.set_ylabel(
+        "Hours",
+        fontsize=11,
+        fontweight="bold",
+        color=TEXT_COLOR,
+    )
+
+    ax_avg.set_xticks(x_avg)
+
+    ax_avg.set_xticklabels(
+        average_labels,
+        fontsize=11,
+        color=TEXT_COLOR,
+    )
+
+    ax_avg.tick_params(
+        axis="y",
+        colors=TEXT_COLOR,
+    )
+
+    # Give the average chart a reasonable amount
+    # of headroom without letting an individual
+    # outlier determine the scale.
+    ax_avg.set_ylim(
+        0,
+        max_average * 1.25
+    )
+
+    # ---------------------------------------------------------
+    # AVERAGE GRAPH SPINES
+    # ---------------------------------------------------------
+
+    ax_avg.spines["top"].set_visible(False)
+    ax_avg.spines["right"].set_visible(False)
+
+    ax_avg.spines["left"].set_color(
+        TEXT_COLOR
+    )
+
+    ax_avg.spines["bottom"].set_color(
+        TEXT_COLOR
+    )
+
+    # =========================================================
+    # BOTTOM GRAPH — INDIVIDUAL RESULTS
+    # =========================================================
+
+    versions = [
         point["label"]
         for point in data_points
     ]
 
-    x = list(range(len(labels)))
+    x_detail = list(
+        range(len(versions))
+    )
 
     project_count = len(PROJECTS)
 
-    # Bar width automatically adjusts based on
-    # number of projects.
     width = 0.75 / project_count
-
-    fig_width = max(
-        14,
-        len(labels) * 2.0
-    )
-
-    fig, ax = plt.subplots(
-        figsize=(fig_width, 7)
-    )
-
-    fig.patch.set_alpha(0.0)
-    ax.patch.set_alpha(0.0)
-
-    # ---------------------------------------------------------
-    # COLORS
-    # ---------------------------------------------------------
-
-    colors = [
-        "#FFD700",  # Always Updated - Gold
-        "#4DA6FF",  # Wmfgn1eN - Blue
-        "#B06CFF",  # Gvp9bbxY - Purple
-    ]
-
-    TEXT_COLOR = "#2ECC71"
-    MISSING_COLOR = "#777777"
-
-    # ---------------------------------------------------------
-    # FIND MAX VALUE
-    # ---------------------------------------------------------
-
-    all_values = [
-        point[label]
-        for point in data_points
-        for label in PROJECTS
-        if point[label] is not None
-    ]
-
-    max_h = max(all_values)
-
-    # ---------------------------------------------------------
-    # DRAW BARS
-    # ---------------------------------------------------------
 
     for index, project_label in enumerate(PROJECTS):
 
@@ -523,17 +616,16 @@ def main():
             - (project_count - 1) / 2
         ) * width
 
-        bar_positions = [
-            i + offset
-            for i in x
+        positions = [
+            x + offset
+            for x in x_detail
         ]
 
-        # Only draw actual bars for versions that exist.
         existing_positions = []
         existing_values = []
 
         for position, point in zip(
-            bar_positions,
+            positions,
             data_points
         ):
 
@@ -543,22 +635,18 @@ def main():
                 existing_positions.append(position)
                 existing_values.append(value)
 
-        bars = ax.bar(
+        bars = ax_detail.bar(
             existing_positions,
             existing_values,
             width=width,
-            color=colors[
-                index % len(colors)
-            ],
+            color=COLORS[project_label],
             edgecolor="black",
-            linewidth=0.6,
-            label=project_names[
-                project_label
-            ],
+            linewidth=0.5,
+            label=project_names[project_label],
         )
 
         # -----------------------------------------------------
-        # VALUE LABELS
+        # INDIVIDUAL VALUE LABELS
         # -----------------------------------------------------
 
         for bar, value in zip(
@@ -566,144 +654,156 @@ def main():
             existing_values
         ):
 
-            ax.text(
+            ax_detail.text(
                 bar.get_x()
                 + bar.get_width() / 2,
                 bar.get_height()
-                + max_h * 0.015,
-                f"{value:.1f}h",
+                + 0.8,
+                f"{value:.1f}",
                 ha="center",
                 va="bottom",
-                fontsize=8,
+                fontsize=7,
                 fontweight="bold",
                 color=TEXT_COLOR,
             )
 
         # -----------------------------------------------------
-        # MISSING VERSION MARKERS
-        #
-        # Instead of a fake empty bar with vertical N/A text,
-        # show a simple dash where the missing bar would be.
+        # MISSING DATA MARKER
         # -----------------------------------------------------
 
         for position, point in zip(
-            bar_positions,
+            positions,
             data_points
         ):
 
             if point[project_label] is None:
 
-                ax.text(
+                ax_detail.text(
                     position,
-                    max_h * 0.015,
-                    "—",
+                    0.5,
+                    "N/A",
                     ha="center",
                     va="bottom",
-                    fontsize=12,
+                    fontsize=11,
                     fontweight="bold",
-                    color=MISSING_COLOR,
+                    color="#777777",
                 )
 
-        # -----------------------------------------------------
-        # AVERAGE LINE
-        # -----------------------------------------------------
-
-        if averages[project_label] is not None:
-
-            ax.axhline(
-                y=averages[project_label],
-                color=colors[
-                    index % len(colors)
-                ],
-                linestyle="--",
-                linewidth=1.4,
-            )
-
     # ---------------------------------------------------------
-    # AXIS
+    # DETAIL TITLE
     # ---------------------------------------------------------
 
-    ax.set_xticks(x)
+    ax_detail.set_title(
+        "Individual Update Times",
+        fontsize=13,
+        fontweight="bold",
+        color=TEXT_COLOR,
+        pad=10,
+    )
 
-    ax.set_xticklabels(
-        labels,
-        rotation=45,
-        ha="right",
+    ax_detail.set_ylabel(
+        "Hours",
         fontsize=10,
+        fontweight="bold",
         color=TEXT_COLOR,
     )
 
-    ax.tick_params(
+    ax_detail.set_xticks(
+        x_detail
+    )
+
+    ax_detail.set_xticklabels(
+        versions,
+        rotation=30,
+        ha="right",
+        fontsize=9,
+        color=TEXT_COLOR,
+    )
+
+    ax_detail.tick_params(
         axis="y",
         colors=TEXT_COLOR,
     )
 
-    ax.set_ylabel(
-        "Hours to Update",
-        fontsize=12,
-        fontweight="bold",
-        color=TEXT_COLOR,
-    )
-
-    ax.set_ylim(
-        0,
-        max_h * 1.25
-    )
-
     # ---------------------------------------------------------
-    # TITLE
+    # DETAIL Y LIMIT
+    #
+    # The individual graph still needs to contain the
+    # 104.5h outlier, but it is now isolated to this
+    # smaller lower section.
     # ---------------------------------------------------------
 
-    average_text = " | ".join(
-        (
-            f"{project_names[label]}: "
-            f"{averages[label]:.1f}h"
-            if averages[label] is not None
-            else f"{project_names[label]}: N/A"
-        )
+    individual_values = [
+        point[label]
+        for point in data_points
         for label in PROJECTS
+        if point[label] is not None
+    ]
+
+    max_individual = max(
+        individual_values
     )
 
-    ax.set_title(
-        (
-            "Modpack Update Speed Comparison\n"
-            + average_text
-        ),
-        fontsize=14,
-        fontweight="bold",
-        color=TEXT_COLOR,
+    ax_detail.set_ylim(
+        0,
+        max_individual * 1.18
     )
 
     # ---------------------------------------------------------
-    # LEGEND
+    # DETAIL LEGEND
     # ---------------------------------------------------------
 
-    ax.legend(
+    ax_detail.legend(
         loc="upper left",
         frameon=False,
         labelcolor=TEXT_COLOR,
+        fontsize=9,
     )
 
     # ---------------------------------------------------------
-    # SPINES
+    # DETAIL SPINES
     # ---------------------------------------------------------
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    ax_detail.spines["top"].set_visible(False)
+    ax_detail.spines["right"].set_visible(False)
 
-    ax.spines["left"].set_color(
+    ax_detail.spines["left"].set_color(
         TEXT_COLOR
     )
 
-    ax.spines["bottom"].set_color(
+    ax_detail.spines["bottom"].set_color(
         TEXT_COLOR
     )
 
     # ---------------------------------------------------------
-    # SAVE GRAPH
+    # MAIN FIGURE TITLE
     # ---------------------------------------------------------
 
-    plt.tight_layout()
+    fig.suptitle(
+        "Modpack Update Speed Comparison",
+        fontsize=22,
+        fontweight="bold",
+        color=TEXT_COLOR,
+        y=0.98,
+    )
+
+    # ---------------------------------------------------------
+    # FOOTER
+    # ---------------------------------------------------------
+
+    fig.text(
+        0.5,
+        0.01,
+        "Average is calculated from the latest 5 valid Minecraft versions. "
+        "N/A indicates that the modpack did not have that version.",
+        ha="center",
+        fontsize=8,
+        color=TEXT_COLOR,
+    )
+
+    # ---------------------------------------------------------
+    # SAVE
+    # ---------------------------------------------------------
 
     plt.savefig(
         "update_graph.png",
@@ -712,13 +812,15 @@ def main():
         transparent=True,
     )
 
+    plt.close(fig)
+
     print(
-        f"\nGraph saved: update_graph.png"
+        "\nGraph saved: update_graph.png"
     )
 
     print(
         f"Displayed {len(data_points)} "
-        f"versions."
+        "versions."
     )
 
 
