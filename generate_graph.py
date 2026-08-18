@@ -443,8 +443,8 @@ def main():
 
     COLORS = {
         "Always Updated": "#FFD700",
-        "Wmfgn1eN": "#4DA6FF",
-        "Gvp9bbxY": "#B06CFF",
+        "Wmfgn1eN": "#B06CFF",
+        "Gvp9bbxY": "#4DA6FF",
     }
 
     # ---------------------------------------------------------
