@@ -3,13 +3,13 @@
     "modrinth_id": "rj6ioflZ",
     "github_repo_owner": "Pendonym",
     "github_repo_name": "Always-Updated",
-    "project_summary": "[26.3 Pre-Release 1 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
+    "project_summary": "[26.3 Pre-Release 2 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "14-26.3",
-    "game_versions": ["26.3-pre-1"],
+    "number": "15-26.3",
+    "game_versions": ["26.3-pre-2"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated [Fabric API](https://modrinth.com/mod/fabric-api), [C2ME](https://modrinth.com/mod/c2me-fabric), and [Fast Noise](https://modrinth.com/mod/zfastnoise)"
+    "changelog": "- Updated Minecraft"
   }
 }
