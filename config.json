@@ -6,10 +6,10 @@
     "project_summary": "[26.3 Pre-Release 2 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "15-26.3",
+    "number": "16-26.3",
     "game_versions": ["26.3-pre-2"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated Minecraft"
+    "changelog": "- Updated [Fast Noise](https://modrinth.com/mod/zfastnoise), [C2ME](https://modrinth.com/mod/c2me-fabric), and [Fabric API](https://modrinth.com/mod/fabric-api)"
   }
 }
