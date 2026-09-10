@@ -239,6 +239,10 @@ def main():
     # =====================================================
     # GET MODRINTH VERSION DATA
     # =====================================================
+    #
+    # This part is unchanged: EVERY project's full version
+    # history still comes from Modrinth, exactly as before.
+    # =====================================================
 
     project_times = {}
 
@@ -290,11 +294,10 @@ def main():
     #
     # This is the important part.
     #
-    # The averages and individual comparison are based on
-    # the Minecraft versions that Always Updated itself has
-    # uploaded.
+    # The averages are based on the Minecraft versions that
+    # Always Updated itself has uploaded (via Modrinth).
     #
-    # We do NOT use the union of all three projects anymore.
+    # We do NOT use the union of all three projects for this.
     # =====================================================
 
     reference_versions = []
@@ -320,12 +323,53 @@ def main():
     )
 
     # =====================================================
-    # GET RELEASE TIMES FOR ALL REFERENCE VERSIONS
+    # LATEST 5 VERSIONS -- FROM THE MOJANG MANIFEST
     # =====================================================
+    #
+    # These are the 5 most recent Minecraft versions
+    # according to Mojang itself, NOT the 5 most recent
+    # versions Always Updated happens to have published.
+    #
+    # Modrinth data (project_times) for each of these is
+    # still looked up exactly as before -- only the source
+    # of *which* versions count as "latest" has changed.
+    # =====================================================
+
+    latest_versions = []
+
+    for version in manifest_order:
+
+        if version in DISALLOWED_VERSIONS:
+            continue
+
+        latest_versions.append(version)
+
+        if len(latest_versions) == 5:
+            break
+
+    print(
+        f"Latest 5 Minecraft versions (per Mojang manifest): "
+        f"{', '.join(latest_versions)}"
+    )
+
+    # =====================================================
+    # GET RELEASE TIMES
+    # =====================================================
+    #
+    # We need release times for the reference versions
+    # (for averages) AND the manifest-based latest 5
+    # (for the individual chart), since those two sets may
+    # no longer be identical.
+    # =====================================================
+
+    versions_needing_release_time = sorted(
+        set(reference_versions) | set(latest_versions),
+        key=lambda version: manifest_order.index(version),
+    )
 
     release_times = {}
 
-    for mc_version in reference_versions:
+    for mc_version in versions_needing_release_time:
 
         try:
 
@@ -344,24 +388,21 @@ def main():
             )
 
     # =====================================================
-    # BUILD ALL-TIME DATA
+    # DATA POINT BUILDER
     # =====================================================
     #
-    # This contains EVERY Always Updated version.
-    #
-    # It is used for the averages.
+    # Shared helper: given a Minecraft version, build the
+    # {label: hours_to_update} data point using project_times
+    # and release_times. Returns None if we don't have a
+    # release time for the version at all.
     # =====================================================
 
-    all_data_points = []
-
-    for mc_version in reference_versions:
+    def make_data_point(mc_version):
 
         if mc_version not in release_times:
-            continue
+            return None
 
-        mc_release_time = release_times[
-            mc_version
-        ]
+        mc_release_time = release_times[mc_version]
 
         point = {
             "label": mc_version
@@ -392,7 +433,25 @@ def main():
                     1
                 )
 
-        all_data_points.append(point)
+        return point
+
+    # =====================================================
+    # BUILD ALL-TIME DATA
+    # =====================================================
+    #
+    # This contains EVERY Always Updated version.
+    #
+    # It is used for the averages.
+    # =====================================================
+
+    all_data_points = []
+
+    for mc_version in reference_versions:
+
+        point = make_data_point(mc_version)
+
+        if point is not None:
+            all_data_points.append(point)
 
     # =====================================================
     # ALL-TIME AVERAGES
@@ -477,11 +536,10 @@ def main():
     #
     # ONLY the latest 5 are shown in the lower graph.
     #
-    # These are based on Always Updated's versions, not
-    # the union of all projects.
+    # These now come from the Mojang manifest (see
+    # `latest_versions` above), not from Always Updated's
+    # own published versions.
     # =====================================================
-
-    latest_versions = reference_versions[:5]
 
     print("\n==========================================")
     print("          LATEST 5 VERSIONS")
@@ -491,28 +549,18 @@ def main():
 
     for mc_version in latest_versions:
 
-        # Find the corresponding all-time data point.
-        matching = next(
-            (
-                point
-                for point in all_data_points
-                if point["label"] == mc_version
-            ),
-            None,
-        )
+        point = make_data_point(mc_version)
 
-        if matching is None:
+        if point is None:
             continue
 
-        latest_data_points.append(
-            matching
-        )
+        latest_data_points.append(point)
 
         output = f"  {mc_version}:"
 
         for label in PROJECTS:
 
-            value = matching[label]
+            value = point[label]
 
             if value is None:
 
@@ -875,6 +923,23 @@ def main():
     )
 
     # =====================================================
+    # BOTTOM X-LIMITS
+    # =====================================================
+    #
+    # Pin these explicitly. Without this, matplotlib
+    # autoscales the x-axis based only on the drawn bars --
+    # and a version where EVERY project is N/A (no bars at
+    # all, e.g. a brand new MC version nobody's updated for
+    # yet) has nothing to anchor that x-position, so its
+    # "N/A" text ends up rendered outside the plot frame.
+    # =====================================================
+
+    ax_detail.set_xlim(
+        -0.5,
+        len(x_detail) - 0.5
+    )
+
+    # =====================================================
     # BOTTOM LEGEND
     # =====================================================
 
@@ -927,7 +992,8 @@ def main():
         (
             "Average uses every valid Minecraft version "
             "uploaded by Always Updated. "
-            "Individual results show only the latest 5. "
+            "Individual results show the latest 5 Minecraft "
+            "versions per Mojang. "
             "N/A = no update for that version."
         ),
         ha="center",
@@ -965,7 +1031,8 @@ def main():
 
     print(
         f"Individual graph displays "
-        f"{len(latest_data_points)} latest versions."
+        f"{len(latest_data_points)} latest Minecraft versions "
+        f"(per Mojang manifest)."
     )
 
     print("==========================================")
