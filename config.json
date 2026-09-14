@@ -7,7 +7,7 @@
   },
   "version": {
     "number": "21-26.3",
-    "game_versions": ["26.3-rc-2"],
+    "game_versions": ["26.3-rc-3"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
     "changelog": "- Updated [C2ME](https://modrinth.com/mod/c2me-fabric) and [Fast Noise](https://modrinth.com/mod/modmenu)\n- Disabled [Fabric API](https://modrinth.com/mod/fabric-api), [Fzzy Config](https://modrinth.com/mod/fzzy-config), [Mod Menu](https://modrinth.com/mod/modmenu), and [Particle Core](https://modrinth.com/mod/particle-core)"
