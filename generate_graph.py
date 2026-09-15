@@ -944,10 +944,12 @@ def main():
     # =====================================================
 
     ax_detail.legend(
-        loc="upper left",
-        frameon=False,
-        labelcolor=TEXT_COLOR,
-        fontsize=9,
+      loc="upper center",
+      bbox_to_anchor=(0.5, 1.25),
+      ncol=3,
+      frameon=False,
+      labelcolor=TEXT_COLOR,
+      fontsize=9,
     )
 
     # =====================================================
