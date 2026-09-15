@@ -6,10 +6,10 @@
     "project_summary": "[26.3 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "22-26.3",
+    "number": "23-26.3",
     "game_versions": ["26.3"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Added [Sodium](https://modrinth.com/mod/sodium)\n- Updated [Fabric API](https://modrinth.com/mod/fabric-api), [C2ME](https://modrinth.com/mod/c2me-fabric), [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin), [Fast Noise](https://modrinth.com/mod/zfastnoise), and [Text Placeholder API](https://modrinth.com/mod/placeholder-api)"
+    "changelog": "- Added [Lithium](https://modrinth.com/mod/lithium)"
   }
 }
