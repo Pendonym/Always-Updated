@@ -6,10 +6,10 @@
     "project_summary": "[26.3 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "24-26.3",
+    "number": "25-26.3",
     "game_versions": ["26.3"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Updated [Fabric API](https://modrinth.com/mod/fabric-api), [Fzzy Config](https://modrinth.com/mod/fzzy-config), and [Lithium](https://modrinth.com/mod/lithium)"
+    "changelog": "- Added [Better Block Entities](https://modrinth.com/mod/better-block-entities), [ModernFix-mVUS](https://modrinth.com/mod/modernfix-mvus), and [More Culling](https://modrinth.com/mod/moreculling)\n- Updated [Fabric API](https://modrinth.com/mod/fabric-api), [Fast IP Ping](https://modrinth.com/mod/fast-ip-ping), and [Ixeris](https://modrinth.com/mod/ixeris)"
   }
 }
