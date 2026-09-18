@@ -2,6 +2,8 @@
 
 Always Updated is a modpack that prioritizes updating quickly to the latest snapshots having the best optimization mods and configurations that are avaliable for the current Minecraft snapshot. There are very minimal quality of life (QoL) mods if you are expecting other ones you are going to need to add your own or use another modpack.
 
+[![10% OFF CODE PENDONYM RENT SERVER Realistic Node](https://cdn.modrinth.com/data/rj6ioflZ/images/5e7643276222630978ae1b23385ae3875b3d4a77.png)](https://realisticnode.com/pendonym)
+
 ## Maintenance
 
 When a new Minecraft snapshot or release comes out, I will stop supporting all earlier versions of the modpack. This pack is only updated and maintained for the most recent snapshot or official release. I will update the release channel for all older versions from Release to Beta. I try to update the modpack as fast as possible but I cannot update any faster due to the time difference between me and Mojang Studios.
@@ -9,8 +11,6 @@ When a new Minecraft snapshot or release comes out, I will stop supporting all e
 ### Update Speed Tracker
 
 ![Update Speed Graph](https://raw.githubusercontent.com/Pendonym/Always-Updated/main/update_graph.png)
-
-This graph shows the delay in hours between a Minecraft snapshot release and this modpack's update.
 
 ## Versioning
 
