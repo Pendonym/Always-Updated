@@ -6,10 +6,10 @@
     "project_summary": "[26.3 / April Fools] - Modpack that mainly tries to support snapshots with maximum performance, including Sodium. This includes minimal QoL mods."
   },
   "version": {
-    "number": "25-26.3",
+    "number": "26-26.3",
     "game_versions": ["26.3"],
     "loaders": ["fabric"],
     "file_path": "~/Downloads/Always Updated {VERSION_NUMBER}.mrpack",
-    "changelog": "- Added [Better Block Entities](https://modrinth.com/mod/better-block-entities), [ModernFix-mVUS](https://modrinth.com/mod/modernfix-mvus), and [More Culling](https://modrinth.com/mod/moreculling)\n- Updated [Fabric API](https://modrinth.com/mod/fabric-api), [Fast IP Ping](https://modrinth.com/mod/fast-ip-ping), and [Ixeris](https://modrinth.com/mod/ixeris)"
+    "changelog": "- Added [Fast Quit](https://modrinth.com/mod/fastquit), [Sodium Shadowy Path Blocks](https://modrinth.com/mod/sodium-shadowy-path-blocks) [Dynamic FPS](https://modrinth.com/mod/dynamic-fps), [ImmediatelyFast](https://modrinth.com/mod/immediatelyfast)\n- Removed [kennytvs-epic-force-close-loading-screen-mod-for-fabric](https://modrinth.com/mod/forcecloseworldloadingscreen)"
   }
 }
