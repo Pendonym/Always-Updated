@@ -15,7 +15,7 @@ load_dotenv()
 
 PROJECTS = {
     "Always Updated": "rj6ioflZ",
-    "Elixir": "Wmfgn1eN",
+    "The Necessary": "Gvp9bbxY",
     "Fastly Optimised": "uBPAMdwq",
 }
 
@@ -584,8 +584,8 @@ def main():
 
     COLORS = {
         "Always Updated": "#FFD700",
-        "Wmfgn1eN": "#B06CFF",
-        "Gvp9bbxY": "#4DA6FF",
+        "The Necessary": "#B06CFF",
+        "Fastly Optimised": "#4DA6FF",
     }
 
     # =====================================================
