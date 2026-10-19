@@ -15,8 +15,8 @@ load_dotenv()
 
 PROJECTS = {
     "Always Updated": "rj6ioflZ",
-    "Wmfgn1eN": "Wmfgn1eN",
-    "Gvp9bbxY": "Gvp9bbxY",
+    "Elixir": "Wmfgn1eN",
+    "Fastly Optimised": "uBPAMdwq",
 }
 
 MODRINTH_TOKEN = os.environ.get("MODRINTH_TOKEN")
