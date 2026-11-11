@@ -15,7 +15,7 @@ load_dotenv()
 
 PROJECTS = {
     "Always Updated": "rj6ioflZ",
-    "The Necessary": "Gvp9bbxY",
+    "Optimally Optimized MC": "Kj6RMu7q",
     "Fastly Optimised": "uBPAMdwq",
 }
 
@@ -584,7 +584,7 @@ def main():
 
     COLORS = {
         "Always Updated": "#FFD700",
-        "The Necessary": "#B06CFF",
+        "Optimally Optimized MC": "#B06CFF",
         "Fastly Optimised": "#4DA6FF",
     }
 
